@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  PROJECT_MANAGER
+  DEVELOPER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(DEVELOPER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects   Project[]
+  tasks      Task[]
+  comments   Comment[]
+  activities Activity[]
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId Int
+  owner   User @relation(fields: [ownerId], references: [id])
+
+  tasks Task[]
+}
+
+model Task {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  assigneeId Int?
+  assignee   User? @relation(fields: [assigneeId], references: [id])
+
+  comments Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  taskId Int
+  task   Task @relation(fields: [taskId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  action    String
+  createdAt DateTime @default(now())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
