@@ -4,6 +4,7 @@ import {
   findTaskById,
   updateTask,
   deleteTask,
+  findProjectsWithTasksForUser,
 } from "../repositories/task.repository";
 
 import { findUserById } from "../repositories/user.repository";
@@ -104,4 +105,7 @@ export async function removeTask(id, ownerId) {
   }
 
   return deleteTask(id);
+}
+export async function getProjectsWithMyTasks(userId) {
+  return findProjectsWithTasksForUser(userId);
 }

@@ -88,3 +88,33 @@ export async function deleteTask(id) {
     },
   });
 }
+
+export async function findProjectsWithTasksForUser(userId) {
+  return prisma.project.findMany({
+    where: {
+      tasks: {
+        some: {
+          assigneeId: userId,
+        },
+      },
+    },
+    include: {
+      _count: {
+        select: {
+          tasks: true,
+        },
+      },
+      tasks: {
+        where: {
+          assigneeId: userId,
+        },
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+}

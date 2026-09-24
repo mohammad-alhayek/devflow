@@ -170,6 +170,32 @@
 
 /**
  * @swagger
+ * /api/my-tasks/projects:
+ *   get:
+ *     summary: Get projects containing tasks assigned to the current user
+ *     tags: [Tasks]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Projects with tasks assigned to the current user retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 projects:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/MyTaskProject'
+ *       401:
+ *         description: User is not authenticated
+ *       500:
+ *         description: Failed to fetch user's task projects
+ */
+
+/**
+ * @swagger
  * components:
  *   schemas:
  *     Task:
@@ -325,4 +351,26 @@
  *           type: integer
  *           nullable: true
  *           example: 2
+ *
+ *     MyTaskProject:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         name:
+ *           type: string
+ *           example: DevFlow
+ *         description:
+ *           type: string
+ *           nullable: true
+ *           example: Project management system
+ *         myTaskCount:
+ *           type: integer
+ *           example: 3
+ *           description: Number of tasks assigned to the current user
+ *         totalTaskCount:
+ *           type: integer
+ *           example: 8
+ *           description: Total number of tasks in the project
  */

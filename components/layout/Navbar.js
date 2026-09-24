@@ -20,6 +20,13 @@ export default function Navbar() {
             Projects
           </Link>
 
+          <Link
+            href="/my-tasks"
+            className="text-sm text-slate-300 transition hover:text-white"
+          >
+            My Tasks
+          </Link>
+
           <LogoutButton />
         </div>
       </div>
