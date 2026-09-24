@@ -1,21 +1,25 @@
+import { NextResponse } from "next/server";
+
 import { authMiddleware } from "../../../../middlewares/auth.middleware";
 
 export async function GET() {
   try {
-    const user = await authMiddleware();
+    const session = await authMiddleware();
 
-    return Response.json(
-      {
-        user,
-      },
-      { status: 200 },
-    );
+    return NextResponse.json({
+      userId: Number(session.userId),
+      role: session.role,
+    });
   } catch (error) {
-    return Response.json(
+    console.error("AUTH ME ERROR:", error);
+
+    return NextResponse.json(
       {
-        error: error.message,
+        error: "Unauthorized",
       },
-      { status: 401 },
+      {
+        status: 401,
+      },
     );
   }
 }

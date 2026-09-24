@@ -196,6 +196,100 @@
 
 /**
  * @swagger
+ * /api/my-tasks/projects/{id}:
+ *   get:
+ *     summary: Get all tasks for a project assigned to the current user
+ *     tags: [Tasks]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Project ID
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: All tasks in the project retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tasks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Invalid project ID
+ *       401:
+ *         description: User is not authenticated
+ *       403:
+ *         description: User does not have any task assigned in this project
+ *       404:
+ *         description: Project not found
+ *       500:
+ *         description: Failed to fetch project tasks
+ */
+
+/**
+ * @swagger
+ * /api/my-tasks/projects/{id}/tasks/{taskId}/status:
+ *   patch:
+ *     summary: Update the status of a task assigned to the current user
+ *     tags: [Tasks]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Project ID
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - name: taskId
+ *         in: path
+ *         required: true
+ *         description: Task ID
+ *         schema:
+ *           type: integer
+ *           example: 5
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateMyTaskStatus'
+ *     responses:
+ *       200:
+ *         description: Task status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Task status updated successfully
+ *                 task:
+ *                   $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Invalid project ID, task ID, status, or task does not belong to this project
+ *       401:
+ *         description: User is not authenticated
+ *       403:
+ *         description: User is not allowed to change this task's status
+ *       404:
+ *         description: Task not found
+ *       500:
+ *         description: Failed to update task status
+ */
+
+/**
+ * @swagger
  * components:
  *   schemas:
  *     Task:
@@ -351,6 +445,20 @@
  *           type: integer
  *           nullable: true
  *           example: 2
+ *
+ *     UpdateMyTaskStatus:
+ *       type: object
+ *       required:
+ *         - status
+ *       properties:
+ *         status:
+ *           type: string
+ *           enum:
+ *             - TODO
+ *             - IN_PROGRESS
+ *             - REVIEW
+ *             - DONE
+ *           example: IN_PROGRESS
  *
  *     MyTaskProject:
  *       type: object

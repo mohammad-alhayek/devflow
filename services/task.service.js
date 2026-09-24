@@ -5,6 +5,7 @@ import {
   updateTask,
   deleteTask,
   findProjectsWithTasksForUser,
+  findProjectTasksForUser,
 } from "../repositories/task.repository";
 
 import { findUserById } from "../repositories/user.repository";
@@ -108,4 +109,42 @@ export async function removeTask(id, ownerId) {
 }
 export async function getProjectsWithMyTasks(userId) {
   return findProjectsWithTasksForUser(userId);
+}
+
+export async function getProjectTasksForUser(projectId, userId) {
+  const project = await findProjectById(projectId);
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  const tasks = await findProjectTasksForUser(projectId, userId);
+
+  const hasAssignedTask = tasks.some((task) => task.assigneeId === userId);
+
+  if (!hasAssignedTask) {
+    throw new Error("You are not allowed to access this project's tasks");
+  }
+
+  return tasks;
+}
+
+export async function updateMyTaskStatus(projectId, taskId, userId, status) {
+  const task = await findTaskById(taskId);
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (task.project.id !== projectId) {
+    throw new Error("Task does not belong to this project");
+  }
+
+  if (task.assigneeId !== userId) {
+    throw new Error("You are not allowed to change this task's status");
+  }
+
+  return updateTask(taskId, {
+    status,
+  });
 }

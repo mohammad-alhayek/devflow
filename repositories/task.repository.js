@@ -118,3 +118,24 @@ export async function findProjectsWithTasksForUser(userId) {
     },
   });
 }
+
+export async function findProjectTasksForUser(projectId, userId) {
+  return prisma.task.findMany({
+    where: {
+      projectId,
+    },
+    include: {
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
