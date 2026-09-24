@@ -21,3 +21,10 @@ export async function createUser(data) {
     data,
   });
 }
+export async function findDevelopers() {
+  return prisma.user.findMany({
+    where: { role: "DEVELOPER" },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+  });
+}
