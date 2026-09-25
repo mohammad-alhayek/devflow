@@ -29,7 +29,7 @@ export default function Home() {
           </a>
 
           <a
-            href="#features"
+            href="/features"
             className="rounded-lg border border-slate-700 px-6 py-3 font-medium hover:bg-slate-900"
           >
             View Features
