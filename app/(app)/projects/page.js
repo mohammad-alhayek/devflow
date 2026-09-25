@@ -1,13 +1,17 @@
 "use client";
+
 import { useEffect, useState } from "react";
 
 import ProjectForm from "../../../components/projects/ProjectForm";
 import ProjectList from "../../../components/projects/ProjectList";
+import SearchInput from "../../../components/common/SearchInput";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -94,29 +98,45 @@ export default function ProjectsPage() {
     setSelectedProject(null);
   }
 
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredProjects = projects.filter((project) => {
+    if (!normalizedSearch) {
+      return true;
+    }
+
+    const searchableText = [
+      project.name,
+      project.description,
+      project.createdAt ? new Date(project.createdAt).toLocaleDateString() : "",
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(normalizedSearch);
+  });
+
   if (loading) {
     return (
       <div className="p-8">
-        {" "}
-        <p className="text-slate-400">Loading projects... </p>{" "}
+        <p className="text-slate-400">Loading projects...</p>
       </div>
     );
   }
 
   return (
     <div className="p-8">
-      {" "}
       <div className="mx-auto max-w-6xl">
-        {" "}
         <div className="mb-8 flex items-center justify-between">
-          {" "}
           <div>
-            {" "}
-            <h1 className="text-3xl font-bold">My Projects </h1>
+            <h1 className="text-3xl font-bold">My Projects</h1>
+
             <p className="mt-2 text-slate-400">
               Manage your development projects.
             </p>
           </div>
+
           <button
             onClick={() => setShowCreateModal(true)}
             className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium transition hover:bg-blue-700"
@@ -124,16 +144,27 @@ export default function ProjectsPage() {
             + Create Project
           </button>
         </div>
+
+        <div className="mb-6">
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search projects..."
+          />
+        </div>
+
         {error && (
           <div className="mb-6 rounded-lg border border-red-900 bg-red-950 p-4 text-red-400">
             {error}
           </div>
         )}
+
         <ProjectList
-          projects={projects}
+          projects={filteredProjects}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
+
         {showCreateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
             <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
@@ -151,6 +182,7 @@ export default function ProjectsPage() {
             </div>
           </div>
         )}
+
         {selectedProject && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
             <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">

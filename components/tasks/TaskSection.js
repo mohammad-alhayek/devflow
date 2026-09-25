@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import TaskCard from "./TaskCard";
 import TaskModal from "./TaskModal";
+import SearchInput from "../common/SearchInput";
 
 export default function TaskSection({ projectId, isOwner }) {
   const [tasks, setTasks] = useState([]);
@@ -13,6 +14,8 @@ export default function TaskSection({ projectId, isOwner }) {
   const [selectedTask, setSelectedTask] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   async function fetchTasks() {
     try {
@@ -141,6 +144,28 @@ export default function TaskSection({ projectId, isOwner }) {
     }
   }
 
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredTasks = tasks.filter((task) => {
+    if (!normalizedSearch) {
+      return true;
+    }
+
+    const searchableText = [
+      task.title,
+      task.description,
+      task.status?.replace("_", " "),
+      task.priority,
+      task.assignee?.name,
+      task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "",
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(normalizedSearch);
+  });
+
   return (
     <section className="mt-8">
       <div className="mb-5 flex items-center justify-between">
@@ -203,17 +228,35 @@ export default function TaskSection({ projectId, isOwner }) {
       )}
 
       {!loading && tasks.length > 0 && (
-        <div className="space-y-4">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              isOwner={isOwner}
-              onEdit={openEditModal}
-              onDelete={handleDelete}
+        <>
+          <div className="mb-5">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search tasks..."
             />
-          ))}
-        </div>
+          </div>
+
+          {filteredTasks.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
+              <p className="text-sm text-slate-400">
+                No tasks match your search.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  isOwner={isOwner}
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {modalOpen && (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import KanbanBoard from "../../../../components/my-tasks/KanbanBoard";
+import SearchInput from "../../../../components/common/SearchInput";
 
 export default function MyTasksProjectPage() {
   const params = useParams();
@@ -15,17 +16,15 @@ export default function MyTasksProjectPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   async function fetchCurrentUser() {
     const response = await fetch("/api/auth/me");
     const data = await response.json();
 
-    console.log("AUTH ME RESPONSE:", data);
-
     if (!response.ok) {
       throw new Error(data.error || "Failed to fetch current user");
     }
-
-    console.log("AUTH USER ID:", data.userId);
 
     setCurrentUserId(Number(data.userId));
   }
@@ -45,8 +44,6 @@ export default function MyTasksProjectPage() {
         throw new Error(data.error || "Failed to fetch project tasks");
       }
 
-      console.log("PROJECT TASKS:", data.tasks);
-
       setTasks(data.tasks);
     } catch (error) {
       setError(error.message);
@@ -60,6 +57,28 @@ export default function MyTasksProjectPage() {
       fetchTasks();
     }
   }, [projectId]);
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredTasks = tasks.filter((task) => {
+    if (!normalizedSearch) {
+      return true;
+    }
+
+    const searchableText = [
+      task.title,
+      task.description,
+      task.status?.replace("_", " "),
+      task.priority,
+      task.assignee?.name,
+      task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "",
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(normalizedSearch);
+  });
 
   return (
     <div>
@@ -107,11 +126,29 @@ export default function MyTasksProjectPage() {
       )}
 
       {!loading && !error && tasks.length > 0 && (
-        <KanbanBoard
-          tasks={tasks}
-          projectId={projectId}
-          currentUserId={currentUserId}
-        />
+        <>
+          <div className="mb-6">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search project tasks..."
+            />
+          </div>
+
+          {filteredTasks.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
+              <p className="text-sm text-slate-400">
+                No tasks match your search.
+              </p>
+            </div>
+          ) : (
+            <KanbanBoard
+              tasks={filteredTasks}
+              projectId={projectId}
+              currentUserId={currentUserId}
+            />
+          )}
+        </>
       )}
     </div>
   );

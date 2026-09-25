@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import MyTaskProjectCard from "../../../components/my-tasks/MyTaskProjectCard";
+import SearchInput from "../../../components/common/SearchInput";
 
 export default function MyTasksPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   async function fetchProjects() {
     try {
@@ -34,6 +37,26 @@ export default function MyTasksPage() {
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredProjects = projects.filter((project) => {
+    if (!normalizedSearch) {
+      return true;
+    }
+
+    const searchableText = [
+      project.name,
+      project.description,
+      project.myTaskCount,
+      project.totalTaskCount,
+    ]
+      .filter((value) => value !== null && value !== undefined)
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(normalizedSearch);
+  });
 
   return (
     <div>
@@ -85,11 +108,29 @@ export default function MyTasksPage() {
       )}
 
       {!loading && !error && projects.length > 0 && (
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <MyTaskProjectCard key={project.id} project={project} />
-          ))}
-        </div>
+        <>
+          <div className="mb-6">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search my tasks..."
+            />
+          </div>
+
+          {filteredProjects.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
+              <p className="text-sm text-slate-400">
+                No projects match your search.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {filteredProjects.map((project) => (
+                <MyTaskProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
